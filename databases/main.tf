@@ -8,12 +8,6 @@ provider "helm" {
   }
 }
 
-resource "kubernetes_namespace" "db_namespace" {
-  metadata {
-    name = var.namespace
-  }
-}
-
 resource "helm_release" "postgres" {
   name       = "my-postgres"
   chart      = "postgresql"
