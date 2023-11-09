@@ -19,13 +19,13 @@ resource "helm_release" "postgres" {
   }
 }
 
-resource "helm_release" "redis" {
-  name       = "my-redis"
-  chart      = "redis"
-  repository = "https://charts.bitnami.com/bitnami"
-  namespace  = var.namespace
-  set {
-    name  = "redisPassword"
-    value = "XPTOioio"
-  }
-}
+# resource "helm_release" "redis" {
+#   name       = "my-redis"
+#   chart      = "redis"
+#   repository = "https://charts.bitnami.com/bitnami"
+#   namespace  = var.namespace
+#   set {
+#     name  = "redisPassword"
+#     value = "XPTOioio"
+#   }
+# }
