@@ -22,8 +22,8 @@ variable "redis_password" {
   default     = "redis_password"
 }
 
-variable "namespace" {
+variable "namespace_db" {
   description = "Kubernetes namespace"
   type        = string
-  default     = "default"
+  default     = "databases"
 }
