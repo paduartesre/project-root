@@ -8,10 +8,43 @@ resource "kubernetes_namespace" "databases" {
   }
 }
 
-# PostgreSQL Deployment
+resource "kubernetes_persistent_volume_claim" "postgres_pvc" {
+  metadata {
+    name      = "postgres-pvc"
+    namespace = kubernetes_namespace.databases.metadata[0].name
+  }
+
+  spec {
+    access_modes = ["ReadWriteOnce"]
+    resources {
+      requests = {
+        storage = "1Gi"
+      }
+    }
+  }
+}
+
+resource "kubernetes_config_map" "postgres_init_script" {
+  metadata {
+    name      = "postgres-init-script"
+    namespace = kubernetes_namespace.databases.metadata[0].name
+  }
+
+  data = {
+    "init.sql" = <<-EOT
+      CREATE USER joao WITH PASSWORD 'password1';
+      GRANT ALL PRIVILEGES ON DATABASE "db_wordpress" TO joao;
+      CREATE USER beto WITH PASSWORD 'password2';
+      GRANT ALL PRIVILEGES ON DATABASE "db_wordpress" TO beto;
+      CREATE USER pedro WITH PASSWORD 'password3';
+      GRANT ALL PRIVILEGES ON DATABASE "db_wordpress" TO pedro;      
+    EOT
+  }
+}
+
 resource "kubernetes_deployment" "postgres" {
   metadata {
-    name = "postgres"
+    name      = "postgres"
     namespace = kubernetes_namespace.databases.metadata[0].name
   }
 
@@ -56,6 +89,11 @@ resource "kubernetes_deployment" "postgres" {
             name       = "postgres-storage"
           }
 
+          volume_mount {
+            mount_path = "/docker-entrypoint-initdb.d"
+            name       = "init-script"
+          }
+
           resources {
             requests = {
               cpu    = "500m"
@@ -75,8 +113,37 @@ resource "kubernetes_deployment" "postgres" {
             claim_name = kubernetes_persistent_volume_claim.postgres_pvc.metadata[0].name
           }
         }
+
+        volume {
+          name = "init-script"
+
+          config_map {
+            name = kubernetes_config_map.postgres_init_script.metadata[0].name
+          }
+        }
       }
     }
+  }
+}
+
+resource "kubernetes_service" "postgres_service" {
+  metadata {
+    name      = "postgres-service"
+    namespace = "databases"
+  }
+
+  spec {
+    selector = {
+      app = "postgres"
+    }
+
+    port {
+      protocol    = "TCP"
+      port        = 5432
+      target_port = 5432
+    }
+
+    type = "ClusterIP"
   }
 }
 
@@ -137,23 +204,6 @@ resource "kubernetes_deployment" "redis" {
   }
 }
 
-# Persistent Volume Claim para PostgreSQL
-resource "kubernetes_persistent_volume_claim" "postgres_pvc" {
-  metadata {
-    name      = "postgres-pvc"
-    namespace = kubernetes_namespace.databases.metadata[0].name
-  }
-
-  spec {
-    access_modes = ["ReadWriteOnce"]
-    resources {
-      requests = {
-        storage = "1Gi"
-      }
-    }
-  }
-}
-
 # Persistent Volume Claim para Redis
 resource "kubernetes_persistent_volume_claim" "redis_pvc" {
   metadata {
@@ -171,23 +221,3 @@ resource "kubernetes_persistent_volume_claim" "redis_pvc" {
   }
 }
 
-resource "kubernetes_service" "postgres_service" {
-  metadata {
-    name      = "postgres-service"
-    namespace = "databases"
-  }
-
-  spec {
-    selector = {
-      app = "postgres"
-    }
-
-    port {
-      protocol    = "TCP"
-      port        = 5432
-      target_port = 5432
-    }
-
-    type = "ClusterIP"
-  }
-}
