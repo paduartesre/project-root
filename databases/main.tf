@@ -170,3 +170,23 @@ resource "kubernetes_persistent_volume_claim" "redis_pvc" {
     }
   }
 }
+
+resource "kubernetes_service" "postgres_service" {
+  metadata {
+    name      = "postgres-service"
+    namespace = kubernetes_namespace.databases.metadata[0].name
+  }
+
+  spec {
+    selector = {
+      app = "postgres"
+    }
+
+    port {
+      port        = 5432
+      target_port = 5432
+    }
+
+    type = "NodePort"
+  }
+}
