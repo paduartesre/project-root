@@ -28,7 +28,7 @@ resource "kubernetes_deployment" "wordpress" {
 
       spec {
         container {
-          image = "wordpress:latest"
+          image = "wordpress:php8.2-fpm-alpine"
           name  = "wordpress"
 
           env {

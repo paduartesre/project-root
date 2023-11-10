@@ -8,11 +8,11 @@ data:
     import redis
     import os
 
-    POSTGRES_HOST = os.getenv("POSTGRES_HOST", "localhost")
-    POSTGRES_DB = os.getenv("POSTGRES_DB", "wordpress")
-    POSTGRES_USER = os.getenv("POSTGRES_USER", "username")
-    POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD", "password")
-    REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
+    POSTGRES_HOST = os.getenv("POSTGRES_HOST", "postgres")
+    POSTGRES_DB = os.getenv("POSTGRES_DB", "db_wordpress")
+    POSTGRES_USER = os.getenv("POSTGRES_USER", "db_user")
+    POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD", "XPTOPoio00*9")
+    REDIS_HOST = os.getenv("REDIS_HOST", "redis")
     REDIS_PORT = os.getenv("REDIS_PORT", 6379)
 
     def load_data_postgres():
