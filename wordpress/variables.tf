@@ -1,3 +1,7 @@
+## Este arquivo apenas poderá ser utilizado se a criação
+## dos recursos forem via "resources" do terraform, 
+## referenciando estas variáveis para obter alguns valores de configurações
+
 variable "wordpress_version" {
   description = "A versão da imagem do WordPress a ser utilizada."
   type        = string

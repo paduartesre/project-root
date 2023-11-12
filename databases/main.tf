@@ -4,7 +4,7 @@ provider "kubernetes" {
 
 resource "kubernetes_namespace" "databases" {
   metadata {
-    name = "databases"
+    name = var.namespace_db
   }
 }
 
@@ -30,6 +30,7 @@ resource "kubernetes_config_map" "postgres_init_script" {
     namespace = kubernetes_namespace.databases.metadata[0].name
   }
 
+  ## Exemplo de criação de usuários ao subir o banco pela primeira vez
   data = {
     "init.sql" = <<-EOT
       CREATE USER joao WITH PASSWORD 'password1';
@@ -39,6 +40,17 @@ resource "kubernetes_config_map" "postgres_init_script" {
       CREATE USER pedro WITH PASSWORD 'password3';
       GRANT ALL PRIVILEGES ON DATABASE "db_wordpress" TO pedro;      
     EOT
+  }
+}
+
+resource "kubernetes_secret" "postgres_password" {
+  metadata {
+    name      = "postgres-password"
+    namespace = var.namespace_db
+  }
+
+  data = {
+    "password" = "WFBUT1BvaW8wMCo5"
   }
 }
 
@@ -71,17 +83,22 @@ resource "kubernetes_deployment" "postgres" {
 
           env {
             name  = "POSTGRES_DB"
-            value = "db_wordpress"
+            value = var.postgres_db_name
           }
 
           env {
             name  = "POSTGRES_USER"
-            value = "db_user"
+            value = var.postgres_user
           }
 
           env {
             name  = "POSTGRES_PASSWORD"
-            value = "XPTOPoio00*9"
+            value_from {
+              secret_key_ref {
+                name = kubernetes_secret.postgres_password.metadata[0].name
+                key  = "password"
+              }
+            }
           }
 
           volume_mount {
@@ -96,12 +113,12 @@ resource "kubernetes_deployment" "postgres" {
 
           resources {
             requests = {
-              cpu    = "500m"
-              memory = "512Mi"
+              cpu    = "128m"
+              memory = "128Mi"
             }
             limits = {
-              cpu    = "1000m"
-              memory = "1024Mi"
+              cpu    = "256m"
+              memory = "256Mi"
             }
           }
         }
@@ -129,7 +146,7 @@ resource "kubernetes_deployment" "postgres" {
 resource "kubernetes_service" "postgres_service" {
   metadata {
     name      = "postgres-service"
-    namespace = "databases"
+    namespace = var.namespace_db
   }
 
   spec {
@@ -182,12 +199,12 @@ resource "kubernetes_deployment" "redis" {
 
           resources {
             requests = {
-              cpu    = "250m"
-              memory = "256Mi"
+              cpu    = "128m"
+              memory = "128Mi"
             }
             limits = {
-              cpu    = "500m"
-              memory = "512Mi"
+              cpu    = "256m"
+              memory = "256Mi"
             }
           }
         }
@@ -204,7 +221,26 @@ resource "kubernetes_deployment" "redis" {
   }
 }
 
-# Persistent Volume Claim para Redis
+resource "kubernetes_service" "redis" {
+  metadata {
+    name      = "redis"
+    namespace = kubernetes_namespace.databases.metadata[0].name
+  }
+
+  spec {
+    selector = {
+      app = "redis"
+    }
+
+    port {
+      port        = 6379
+      target_port = 6379
+    }
+
+    type = "ClusterIP"
+  }
+}
+
 resource "kubernetes_persistent_volume_claim" "redis_pvc" {
   metadata {
     name      = "redis-pvc"

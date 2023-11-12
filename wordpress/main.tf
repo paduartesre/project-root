@@ -1,99 +1,31 @@
 provider "kubernetes" {
   config_path = "~/.kube/config"
-  
 }
 
-resource "kubernetes_deployment" "wordpress" {
-  metadata {
-    name = "wordpress"
-    labels = {
-      app = "wordpress"
-    }
-  }
-
-  spec {
-    replicas = 1
-    selector {
-      match_labels = {
-        app = "wordpress"
-      }
-    }
-
-    template {
-      metadata {
-        labels = {
-          app = "wordpress"
-        }
-      }
-
-      spec {
-        container {
-          image = "wordpress:php8.2-fpm-alpine"
-          name  = "wordpress"
-
-          env {
-            name  = "WORDPRESS_DB_HOST"
-            value = "postgres.databases:5432"
-          }
-
-          env {
-            name  = "WORDPRESS_DB_USER"
-            value = "db_user"
-          }
-
-          env {
-            name  = "WORDPRESS_DB_PASSWORD"
-            value = "XPTOPoio00*9"
-          }
-
-          env {
-            name  = "WORDPRESS_DB_NAME"
-            value = "db_wordpress"
-          }
-
-          port {
-            container_port = 80
-          }
-        }
-      }
-    }
-  }
+resource "kubernetes_manifest" "wordpress_deployment" {
+  manifest = yamldecode(file("${path.module}/k8s-config/wordpress-deployment.yaml"))
 }
 
-resource "kubernetes_service" "wordpress" {
-  metadata {
-    name = "wordpress"
-  }
-
-  spec {
-    selector = {
-      app = "wordpress"
-    }
-
-    port {
-      port        = 80
-      target_port = 80
-    }
-
-    type = "LoadBalancer"
-  }
+resource "kubernetes_manifest" "secrets" {
+  manifest = yamldecode(file("${path.module}/k8s-config/secrets.yaml"))
 }
 
-resource "kubernetes_horizontal_pod_autoscaler" "wordpress" {
-  metadata {
-    name = "wordpress"
-  }
+resource "kubernetes_manifest" "autoscaling" {
+  manifest = yamldecode(file("${path.module}/k8s-config/autoscaling.yaml"))
+}
 
-  spec {
-    scale_target_ref {
-      api_version = "apps/v1"
-      kind        = "Deployment"
-      name        = "wordpress"
-    }
+resource "kubernetes_manifest" "wordpress_service" {
+  manifest = yamldecode(file("${path.module}/k8s-config/wordpress-service.yaml"))
+}
 
-    min_replicas = 1
-    max_replicas = 10
+resource "kubernetes_manifest" "wordpress_ingress" {
+  manifest = yamldecode(file("${path.module}/k8s-config/wordpress-ingress.yaml"))
+}
 
-    target_cpu_utilization_percentage = 50
-  }
+resource "kubernetes_manifest" "mysql_deployment" {
+  manifest = yamldecode(file("${path.module}/k8s-config/mysql-deployment.yaml"))
+}
+
+resource "kubernetes_manifest" "mysql_service" {
+  manifest = yamldecode(file("${path.module}/k8s-config/mysql-service.yaml"))
 }
