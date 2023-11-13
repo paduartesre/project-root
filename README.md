@@ -66,8 +66,8 @@ Se desejar aplicar a partir do seu ambiente local, faça o expose do serviço do
 Após instalar o terraform e minikube, faça os passos abaixo.
 
 1-Execute <b>minikube start</b><br>
-2-Execute <b>minikube addons ingress</b> e <b>minikube addons ingress-dns</b> (Criação de Ingress do tipo Nginx).<br>
-3-Execute <b>minikube addons metrics-server</b> para habilitar métricas de uso dos recursos no monitoramento.<br>
+2-Execute <b>minikube addons enable ingress</b> e <b>minikube addons enable ingress-dns</b> (Criação de Ingress do tipo Nginx).<br>
+3-Execute <b>minikube addons enable metrics-server</b> para habilitar métricas de uso dos recursos no monitoramento.<br>
 4-Em outro Prompt de Comando, execute <b>minikube dashboard</b> (para exibir o monitoramento dos recursos).<br>
 5-Aplicar o terraform iniciando pela pasta ‘databases’, ‘configmaps’ (na raíz do projeto) e por fim a pasta ‘wordpress’.<br>
 6-Execute <b>minikube service wordpress -n wordpress</b> para expor o serviço do Wordpress e obter a URL de acesso.<br>
