@@ -37,3 +37,9 @@ variable "resource_limits" {
     memory = "512Mi"
   }
 }
+
+variable "namespace_wp" {
+  description = "Kubernetes namespace"
+  type        = string
+  default     = "wordpress"
+}

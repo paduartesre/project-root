@@ -30,7 +30,7 @@ resource "kubernetes_config_map" "postgres_init_script" {
     namespace = kubernetes_namespace.databases.metadata[0].name
   }
 
-  ## Exemplo de criação de usuários ao subir o banco pela primeira vez
+  ## Exemplo de criação de usuários ao subir o banco pela primeira vez e tabela de exemplo
   data = {
     "init.sql" = <<-EOT
       CREATE USER joao WITH PASSWORD 'password1';
@@ -38,7 +38,8 @@ resource "kubernetes_config_map" "postgres_init_script" {
       CREATE USER beto WITH PASSWORD 'password2';
       GRANT ALL PRIVILEGES ON DATABASE "db_wordpress" TO beto;
       CREATE USER pedro WITH PASSWORD 'password3';
-      GRANT ALL PRIVILEGES ON DATABASE "db_wordpress" TO pedro;      
+      GRANT ALL PRIVILEGES ON DATABASE "db_wordpress" TO pedro;
+      CREATE TABLE load_data (id SERIAL PRIMARY KEY, nome VARCHAR(255) NOT NULL);
     EOT
   }
 }
@@ -50,7 +51,7 @@ resource "kubernetes_secret" "postgres_password" {
   }
 
   data = {
-    "password" = "WFBUT1BvaW8wMCo5"
+    "password" = "WFBUT1BvaW8wMCo5" #base64
   }
 }
 
@@ -158,9 +159,10 @@ resource "kubernetes_service" "postgres_service" {
       protocol    = "TCP"
       port        = 5432
       target_port = 5432
+      node_port   = 30432
     }
 
-    type = "ClusterIP"
+    type = "NodePort"
   }
 }
 
@@ -235,9 +237,10 @@ resource "kubernetes_service" "redis" {
     port {
       port        = 6379
       target_port = 6379
+      node_port   = 30379
     }
 
-    type = "ClusterIP"
+    type = "NodePort"
   }
 }
 

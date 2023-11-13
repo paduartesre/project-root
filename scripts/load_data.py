@@ -2,18 +2,22 @@ import psycopg2
 import redis
 import os
 import logging
+import csv
 
 # Configuração de logging
 logging.basicConfig(level=logging.INFO)
 
-POSTGRES_HOST = os.getenv("POSTGRES_HOST", "localhost")
-POSTGRES_DB = os.getenv("POSTGRES_DB", "wordpress")
-POSTGRES_USER = os.getenv("POSTGRES_USER", "username")
+POSTGRES_HOST = os.getenv("POSTGRES_HOST", "postgres")
+POSTGRES_DB = os.getenv("POSTGRES_DB", "db_wordpress")
+POSTGRES_USER = os.getenv("POSTGRES_USER", "db_user")
 POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD")
+REDIS_HOST = os.getenv("REDIS_HOST", "redis")
 REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
 REDIS_PORT = os.getenv("REDIS_PORT", 6379)
+DATA_FILE_PATH = os.getenv("DATA_FILE_PATH", "../data/dados.csv")
 
-def load_data_postgres():
+# Carregar dados no banco Postgres
+def load_data_postgres(file_path):
     try:
         with psycopg2.connect(
             host=POSTGRES_HOST,
@@ -22,22 +26,31 @@ def load_data_postgres():
             password=POSTGRES_PASSWORD
         ) as conn:
             with conn.cursor() as cur:
-                pass
+                with open(file_path, mode='r') as file:
+                    reader = csv.reader(file)
+                    next(reader)
+                    for id, nome in reader:
+                        cur.execute("INSERT INTO load_data (id, nome) VALUES (%s, %s)", (id, nome))
+            conn.commit()
     except psycopg2.DatabaseError as e:
         logging.error(f"Erro ao carregar dados no PostgreSQL: {e}")
     except Exception as e:
         logging.error(f"Erro inesperado: {e}")
 
-def load_data_redis():
+# Carregar dados no Redis
+def load_data_redis(file_path):
     try:
         r = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, decode_responses=True)
-        # Adicionar dados de exemplo
-        # r.set("chave", "valor")
+        with open(file_path, mode='r') as file:
+            reader = csv.reader(file)
+            next(reader)
+            for id, nome in reader:
+                r.set(id, nome)
     except redis.RedisError as e:
         logging.error(f"Erro ao carregar dados no Redis: {e}")
     except Exception as e:
         logging.error(f"Erro inesperado: {e}")
 
 if __name__ == "__main__":
-    load_data_postgres()
-    load_data_redis()
+    load_data_postgres(DATA_FILE_PATH)
+    load_data_redis(DATA_FILE_PATH)
