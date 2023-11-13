@@ -29,3 +29,9 @@ resource "kubernetes_manifest" "mysql_deployment" {
 resource "kubernetes_manifest" "mysql_service" {
   manifest = yamldecode(file("${path.module}/k8s-config/mysql-service.yaml"))
 }
+
+resource "kubernetes_namespace" "wordpress" {
+  metadata {
+    name = var.namespace_wp
+  }
+}
