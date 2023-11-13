@@ -75,12 +75,12 @@ Após instalar o terraform e minikube, faça os passos abaixo.
 
 ## Realizado os passos acima, e acessar a URL no navegador fornecida pelo minikube, a seguinte tela será apresentada.
 
-![image](https://github.com/paduartesre/project-root/assets/55962934/3f3a1598-a13d-43f5-95b1-f5243e731a6b)
+![image](images/tela-wordpress.png)
 
 <br>
 Desta forma, a aplicação está pronta para ser configurada e utilizada.
 E no monitoramento (Dashboard) os serviços implementados nesta solução com métricas de CPU e Memória.<br><br>
 
-![image](https://github.com/paduartesre/project-root/assets/55962934/625340dc-1b9d-4647-940d-76d1cb9f371f)
+![image](images/tela-monitoramento-1.png)
 <br><br><br>
-![image](https://github.com/paduartesre/project-root/assets/55962934/d763ea91-4818-417f-92eb-6dce2e2d5068)
+![image](images/tela-monitoramento-2.png)
